@@ -99,9 +99,22 @@ export default function App() {
           if (data.sourceText !== undefined) setSourceText(data.sourceText);
           if (data.sourceLangCode !== undefined) setSourceLangCode(data.sourceLangCode);
           if (data.targetLangCode !== undefined) setTargetLangCode(data.targetLangCode);
-          if (data.glossaryId !== undefined) setGlossaryId(data.glossaryId);
-          if (data.formality !== undefined) setFormality(data.formality);
-          if (data.styleRules !== undefined) setStyleRules(data.styleRules);
+          
+          // Only fall back to server defaults if browser local storage has no config
+          const localGlossaryId = localStorage.getItem("deepl_glossary_id");
+          const localFormality = localStorage.getItem("deepl_formality");
+          const localStyleRules = localStorage.getItem("deepl_style_rules");
+
+          if (data.glossaryId !== undefined && (localGlossaryId === null || localGlossaryId === "")) {
+            setGlossaryId(data.glossaryId);
+          }
+          if (data.formality !== undefined && (localFormality === null || localFormality === "" || localFormality === "default")) {
+            setFormality(data.formality);
+          }
+          if (data.styleRules !== undefined && (localStyleRules === null || localStyleRules === "")) {
+            setStyleRules(data.styleRules);
+          }
+          
           if (data.isAutoTranslate !== undefined) setIsAutoTranslate(data.isAutoTranslate);
           if (data.isDark !== undefined) setIsDark(data.isDark);
         }

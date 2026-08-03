@@ -14,6 +14,7 @@ import {
   Sliders,
   BookOpen,
   Info,
+  Save,
 } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { Language, ProviderType } from "../types";
@@ -40,6 +41,7 @@ interface TranslationWorkspaceProps {
   onChangeFormality: (f: string) => void;
   styleRules: string;
   onChangeStyleRules: (rules: string) => void;
+  onSaveAsDefault: () => Promise<void>;
 }
 
 export default function TranslationWorkspace({
@@ -61,14 +63,34 @@ export default function TranslationWorkspace({
   onChangeFormality,
   styleRules,
   onChangeStyleRules,
+  onSaveAsDefault,
 }: TranslationWorkspaceProps) {
   const editorRef = useRef<HTMLDivElement>(null);
   const [copied, setCopied] = useState(false);
   const [historyStack, setHistoryStack] = useState<string[]>([]);
   const [redoStack, setRedoStack] = useState<string[]>([]);
-  const [isAdvancedOpen, setIsAdvancedOpen] = useState(() => {
-    return !!localStorage.getItem("deepl_glossary_id") || localStorage.getItem("deepl_formality") !== "default" || !!localStorage.getItem("deepl_style_rules");
-  });
+  const [isAdvancedOpen, setIsAdvancedOpen] = useState(false);
+
+  const [isSavingDefault, setIsSavingDefault] = useState(false);
+  const [saveSuccess, setSaveSuccess] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
+
+  const handleSaveDefaultClick = async () => {
+    setIsSavingDefault(true);
+    setSaveSuccess(false);
+    setSaveError(null);
+    try {
+      await onSaveAsDefault();
+      setSaveSuccess(true);
+      setTimeout(() => setSaveSuccess(false), 3000);
+    } catch (err: any) {
+      console.error(err);
+      setSaveError(err.message || "Không thể lưu cấu hình mặc định lên hệ thống.");
+      setTimeout(() => setSaveError(null), 4000);
+    } finally {
+      setIsSavingDefault(false);
+    }
+  };
 
   const [activeTooltip, setActiveTooltip] = useState<{
     text: string;
@@ -351,6 +373,48 @@ export default function TranslationWorkspace({
                 <p>
                   <strong>💡 Giải thích kỹ thuật:</strong> DeepL API hoạt động độc lập với giao diện Web Translator của DeepL. Khi dịch qua API, DeepL chỉ áp dụng Glossary và Formality nếu các tham số <code>glossary_id</code> và <code>formality</code> được truyền trực tiếp trong payload của request API. Bản thiết lập trên giúp tự động chuyển tiếp các cấu hình này đến máy chủ dịch thuật DeepL.
                 </p>
+              </div>
+            </div>
+
+            {/* Save as system default settings option */}
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pt-3 border-t border-slate-100 dark:border-slate-800">
+              <div className="flex flex-col space-y-0.5">
+                <span className="text-xs font-bold text-slate-700 dark:text-slate-200">Lưu làm cấu hình mặc định</span>
+                <span className="text-[10px] text-slate-400 dark:text-slate-500 leading-normal max-w-lg">
+                  Lưu văn bản nguồn, ngôn ngữ đã chọn, mã Glossary, văn phong và các quy tắc thay thế phong cách hiện tại thành cấu hình mặc định hệ thống. Người truy cập sau này (bằng link) sẽ nhìn thấy cấu hình này đầu tiên.
+                </span>
+              </div>
+              
+              <div className="flex items-center space-x-2 shrink-0 self-end sm:self-auto">
+                {saveError && (
+                  <span className="text-[10px] font-semibold text-rose-500">{saveError}</span>
+                )}
+                {saveSuccess && (
+                  <span className="text-[10px] font-bold text-emerald-500 flex items-center space-x-1 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-1 rounded border border-emerald-100 dark:border-emerald-900/50">
+                    <Check className="h-3 w-3" />
+                    <span>Đã lưu làm mặc định!</span>
+                  </span>
+                )}
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  type="button"
+                  onClick={handleSaveDefaultClick}
+                  disabled={isSavingDefault}
+                  className="flex items-center space-x-1.5 px-3 py-2 bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-400 text-white font-bold text-xs rounded-lg shadow-sm hover:shadow-md transition-all cursor-pointer"
+                >
+                  {isSavingDefault ? (
+                    <>
+                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                      <span>Đang lưu...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Save className="h-3.5 w-3.5" />
+                      <span>Lưu làm mặc định</span>
+                    </>
+                  )}
+                </motion.button>
               </div>
             </div>
           </motion.div>

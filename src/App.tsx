@@ -24,7 +24,7 @@ import TrafficAnalytics from "./components/TrafficAnalytics";
 export default function App() {
   const [isDark, setIsDark] = useState(() => {
     const stored = localStorage.getItem("deepl_theme");
-    return stored ? stored === "dark" : true; // Default to dark mode as requested
+    return stored ? stored === "dark" : false; // Default to light mode
   });
 
   useEffect(() => {
@@ -52,10 +52,10 @@ export default function App() {
   const [styleRules, setStyleRules] = useState(() => localStorage.getItem("deepl_style_rules") || "");
   
   const [history, setHistory] = useState<TranslationHistoryItem[]>([]);
-  const [showHistory, setShowHistory] = useState(true);
+  const [showHistory, setShowHistory] = useState(false); // Default to collapsed
   const [showAnalytics, setShowAnalytics] = useState(() => {
     const val = localStorage.getItem("deepl_show_analytics");
-    return val !== null ? val === "true" : true; // Default to true to show it instantly
+    return val !== null ? val === "true" : false; // Default to false to keep it collapsed
   });
   const [serverConfig, setServerConfig] = useState<{ hasDeepLKey: boolean; hasGeminiKey: boolean }>({
     hasDeepLKey: false,
@@ -79,7 +79,7 @@ export default function App() {
     localStorage.setItem("deepl_show_analytics", String(showAnalytics));
   }, [showAnalytics]);
 
-  // Load history from localStorage on mount
+  // Load history and defaults on mount
   useEffect(() => {
     try {
       const storedHistory = localStorage.getItem("deepl_translate_history");
@@ -89,6 +89,23 @@ export default function App() {
     } catch (err) {
       console.error("Failed to load translation history:", err);
     }
+
+    // Fetch system defaults from the server
+    fetch("/api/defaults")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data) {
+          if (data.sourceText !== undefined) setSourceText(data.sourceText);
+          if (data.sourceLangCode !== undefined) setSourceLangCode(data.sourceLangCode);
+          if (data.targetLangCode !== undefined) setTargetLangCode(data.targetLangCode);
+          if (data.glossaryId !== undefined) setGlossaryId(data.glossaryId);
+          if (data.formality !== undefined) setFormality(data.formality);
+          if (data.styleRules !== undefined) setStyleRules(data.styleRules);
+          if (data.isAutoTranslate !== undefined) setIsAutoTranslate(data.isAutoTranslate);
+          if (data.isDark !== undefined) setIsDark(data.isDark);
+        }
+      })
+      .catch((err) => console.error("Failed to fetch defaults:", err));
 
     // Fetch server key configuration status
     fetch("/api/config")
@@ -228,6 +245,26 @@ export default function App() {
     });
   };
 
+  const handleSaveAsDefault = async () => {
+    const response = await fetch("/api/defaults", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        sourceText,
+        sourceLangCode,
+        targetLangCode,
+        glossaryId,
+        formality,
+        styleRules,
+        isAutoTranslate,
+        isDark,
+      }),
+    });
+    if (!response.ok) {
+      throw new Error("Lỗi khi gửi yêu cầu lưu cấu hình.");
+    }
+  };
+
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex flex-col font-sans text-slate-800 dark:text-slate-100 selection:bg-indigo-100 dark:selection:bg-indigo-950 selection:text-indigo-900 dark:selection:text-indigo-200 transition-colors duration-200">
       {/* HEADER BAR */}
@@ -307,11 +344,6 @@ export default function App() {
                 <Moon className="h-4 w-4 text-indigo-600" />
               )}
             </motion.button>
-
-            {/* Premium initials profile badge */}
-            <div className="w-8.5 h-8.5 rounded-full bg-indigo-600 flex items-center justify-center text-xs font-extrabold text-white shadow-md shadow-indigo-200 dark:shadow-indigo-950/50 select-none" title="son11032001@gmail.com">
-              S
-            </div>
           </div>
         </div>
       </header>
@@ -357,6 +389,7 @@ export default function App() {
             onChangeFormality={setFormality}
             styleRules={styleRules}
             onChangeStyleRules={setStyleRules}
+            onSaveAsDefault={handleSaveAsDefault}
           />
 
           {/* Translation Error alert */}

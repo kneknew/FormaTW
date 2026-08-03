@@ -1,15 +1,29 @@
 @import "tailwindcss";
 
-@variant dark (&:where(.dark, .dark *));
+@variant dark (.dark &);
 
 @theme {
+  /* Slate override for DeepL colors */
+  --color-slate-50: #f8f9fb;
+  --color-slate-100: #eef1f6;
+  --color-slate-200: #dfe4ec;
+  --color-slate-300: #c2cbd7;
+  --color-slate-400: #9ba7b9;
+  --color-slate-500: #718096;
+  --color-slate-600: #4a5568;
+  --color-slate-700: #2d3748;
+  --color-slate-800: #1d2535; /* DeepL dark card border */
+  --color-slate-900: #181e2b; /* DeepL dark card background */
+  --color-slate-950: #111622; /* DeepL dark page background */
+
+  /* Indigo overrides for DeepL colors */
   --color-indigo-50: #f0f4fa;
   --color-indigo-100: #dbe4f4;
   --color-indigo-200: #bed0ea;
   --color-indigo-300: #93b3dc;
   --color-indigo-400: #6291cc;
-  --color-indigo-500: #3f73bc;
-  --color-indigo-600: #0f2c59;
+  --color-indigo-500: #0060df; /* DeepL bright active blue */
+  --color-indigo-600: #0f2c59; /* DeepL primary deep blue */
   --color-indigo-700: #0c244b;
   --color-indigo-800: #0a1d3c;
   --color-indigo-900: #07152c;

@@ -2,6 +2,7 @@ import express from "express";
 import path from "path";
 import { createServer as createViteServer } from "vite";
 import dotenv from "dotenv";
+import fs from "fs/promises";
 
 // Load environment variables
 dotenv.config();
@@ -490,6 +491,37 @@ app.get("/api/config", (req, res) => {
     hasDeepLKey: !!process.env.DEEPL_API_KEY,
     hasGeminiKey: false,
   });
+});
+
+// System Defaults Endpoints
+app.get("/api/defaults", async (req, res) => {
+  try {
+    const filePath = path.join(process.cwd(), "defaults.json");
+    const data = await fs.readFile(filePath, "utf-8");
+    res.json(JSON.parse(data));
+  } catch (err) {
+    // If defaults.json doesn't exist, return empty/initial settings
+    res.json({
+      sourceText: "",
+      sourceLangCode: "vi",
+      targetLangCode: "zh-tw",
+      glossaryId: "",
+      formality: "default",
+      styleRules: "",
+      isAutoTranslate: true,
+      isDark: false,
+    });
+  }
+});
+
+app.post("/api/defaults", async (req, res) => {
+  try {
+    const filePath = path.join(process.cwd(), "defaults.json");
+    await fs.writeFile(filePath, JSON.stringify(req.body, null, 2), "utf-8");
+    res.json({ success: true });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message || "Không thể lưu cấu hình mặc định." });
+  }
 });
 
 async function startServer() {

@@ -1,0 +1,6 @@
+{
+  "name": "DeepL Translate Việt - Trung",
+  "description": "Ứng dụng dịch thuật thông minh phong cách DeepL, mặc định tiếng Việt sang tiếng Trung phồn thể, hỗ trợ định dạng văn bản và lưu lịch sử dịch.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

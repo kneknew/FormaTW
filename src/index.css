@@ -1,0 +1,75 @@
+@import "tailwindcss";
+
+/* Highlights for applied style rules and glossaries */
+.applied-style-rule {
+  color: #0d9488; /* Teal-600 */
+  border-bottom: 2px dashed rgba(13, 148, 136, 0.5);
+  padding-bottom: 1px;
+  cursor: help;
+  transition: all 0.2s ease-in-out;
+  display: inline;
+  font-weight: 500;
+}
+
+.applied-style-rule:hover {
+  background-color: rgba(13, 148, 136, 0.08);
+  border-bottom-color: #0d9488;
+  border-radius: 4px;
+  padding-left: 2px;
+  padding-right: 2px;
+}
+
+.applied-glossary {
+  color: #0d9488; /* Teal-600 */
+  border-bottom: 2px dashed rgba(13, 148, 136, 0.5);
+  padding-bottom: 1px;
+  cursor: help;
+  transition: all 0.2s ease-in-out;
+  display: inline;
+  font-weight: 500;
+}
+
+.applied-glossary:hover {
+  background-color: rgba(13, 148, 136, 0.08);
+  border-bottom-color: #0d9488;
+  border-radius: 4px;
+  padding-left: 2px;
+  padding-right: 2px;
+}
+
+/* Custom Tooltip Container Styles */
+.custom-tooltip-portal {
+  position: absolute;
+  z-index: 9999;
+  background-color: #0060df; /* DeepL Classic Blue */
+  color: #ffffff; /* White text */
+  padding: 8px 12px;
+  border-radius: 4px;
+  font-size: 13px;
+  font-weight: 400;
+  max-width: 300px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  pointer-events: none;
+  font-family: inherit;
+  line-height: 1.4;
+  text-align: left;
+}
+
+.custom-tooltip-portal::after {
+  content: "";
+  position: absolute;
+  bottom: -6px;
+  left: 50%;
+  transform: translateX(-50%);
+  border-width: 6px 6px 0;
+  border-style: solid;
+  border-color: #0060df transparent;
+  display: block;
+  width: 0;
+}
+
+.custom-tooltip-portal strong {
+  font-weight: 600;
+  color: #ffffff;
+}
+

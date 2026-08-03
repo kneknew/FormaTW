@@ -1,6 +1,5 @@
 import express from "express";
 import path from "path";
-import { createServer as createViteServer } from "vite";
 import dotenv from "dotenv";
 import fs from "fs/promises";
 
@@ -493,8 +492,13 @@ app.get("/api/config", (req, res) => {
   });
 });
 
-// System Defaults Endpoints
+// System Defaults Endpoints (with in-memory fallback for read-only serverless runtimes)
+let inMemoryDefaults: any = null;
+
 app.get("/api/defaults", async (req, res) => {
+  if (inMemoryDefaults) {
+    return res.json(inMemoryDefaults);
+  }
   try {
     const filePath = path.join(process.cwd(), "defaults.json");
     const data = await fs.readFile(filePath, "utf-8");
@@ -515,18 +519,22 @@ app.get("/api/defaults", async (req, res) => {
 });
 
 app.post("/api/defaults", async (req, res) => {
+  inMemoryDefaults = req.body;
   try {
     const filePath = path.join(process.cwd(), "defaults.json");
     await fs.writeFile(filePath, JSON.stringify(req.body, null, 2), "utf-8");
     res.json({ success: true });
   } catch (err: any) {
-    res.status(500).json({ error: err.message || "Không thể lưu cấu hình mặc định." });
+    // Fail-safe check for read-only platforms like Vercel Serverless
+    console.warn("Could not write defaults to disk (expected on read-only environments):", err.message);
+    res.json({ success: true, warning: "Saved in-memory (read-only environment)" });
   }
 });
 
 async function startServer() {
   // Vite integration
   if (process.env.NODE_ENV !== "production") {
+    const { createServer: createViteServer } = await import("vite");
     const vite = await createViteServer({
       server: { middlewareMode: true },
       appType: "spa",
@@ -546,4 +554,9 @@ async function startServer() {
   });
 }
 
-startServer();
+// Only start the listening server when not running in Vercel Serverless environments
+if (!process.env.VERCEL) {
+  startServer();
+}
+
+export default app;

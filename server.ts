@@ -9,6 +9,57 @@ dotenv.config();
 const app = express();
 app.use(express.json());
 
+interface GlossaryMetadata {
+  glossary_id: string;
+  name: string;
+  ready: boolean;
+  source_lang: string;
+  target_lang: string;
+}
+
+const glossaryMetadataCache = new Map<string, GlossaryMetadata | null>();
+
+async function fetchDeepLGlossaryMetadata(glossaryId: string): Promise<GlossaryMetadata | null> {
+  const cached = glossaryMetadataCache.get(glossaryId);
+  if (cached !== undefined) return cached;
+
+  const apiKey = process.env.DEEPL_API_KEY;
+  if (!apiKey) return null;
+
+  const isFreeAccount = apiKey.endsWith(":fx");
+  const url = isFreeAccount
+    ? `https://api-free.deepl.com/v2/glossaries/${glossaryId}`
+    : `https://api.deepl.com/v2/glossaries/${glossaryId}`;
+
+  try {
+    const response = await fetch(url, {
+      method: "GET",
+      headers: {
+        Authorization: `DeepL-Auth-Key ${apiKey}`,
+      },
+    });
+
+    if (!response.ok) {
+      console.warn(`[DeepL] Glossary metadata lookup failed for ID ${glossaryId}: status ${response.status}`);
+      glossaryMetadataCache.set(glossaryId, null);
+      return null;
+    }
+
+    const data: GlossaryMetadata = await response.json();
+    glossaryMetadataCache.set(glossaryId, data);
+    return data;
+  } catch (err) {
+    console.error("Error fetching DeepL glossary metadata:", err);
+    return null;
+  }
+}
+
+interface DeepLTranslationResult {
+  text: string;
+  glossaryApplied: boolean;
+  glossaryWarning?: string;
+}
+
 // Translate using DeepL API
 async function translateWithDeepL(
   text: string,
@@ -16,7 +67,7 @@ async function translateWithDeepL(
   sourceLang?: string,
   glossaryId?: string,
   formality?: string
-): Promise<string> {
+): Promise<DeepLTranslationResult> {
   const apiKey = process.env.DEEPL_API_KEY;
   if (!apiKey) {
     throw new Error("DEEPL_API_KEY is not defined in environment variables");
@@ -46,11 +97,39 @@ async function translateWithDeepL(
     bodyData.source_lang = dlSource;
   }
 
+  let glossaryApplied = false;
+  let glossaryWarning: string | undefined = undefined;
+
   if (glossaryId && glossaryId.trim() !== "") {
     if (!dlSource) {
-      throw new Error("Để áp dụng Glossary, bạn phải chọn một ngôn ngữ nguồn cụ thể thay vì chọn 'Tự động phát hiện' (DeepL API constraint).");
+      glossaryApplied = false;
+      glossaryWarning = "Glossary không thể áp dụng khi chọn ngôn ngữ nguồn 'Tự động phát hiện'. Hệ thống đã tự động dịch thường không áp dụng Glossary.";
+    } else {
+      // Check glossary language pair match before sending to DeepL
+      const meta = await fetchDeepLGlossaryMetadata(glossaryId.trim());
+      if (meta) {
+        const metaSource = meta.source_lang.toUpperCase();
+        const metaTarget = meta.target_lang.toUpperCase();
+        
+        const compareLangs = (langA: string, langB: string) => {
+          const shortA = langA.split("-")[0];
+          const shortB = langB.split("-")[0];
+          return shortA === shortB;
+        };
+
+        if (!compareLangs(metaSource, dlSource) || !compareLangs(metaTarget, dlTarget)) {
+          glossaryApplied = false;
+          glossaryWarning = `Glossary ID hiện tại cấu hình cho cặp ngôn ngữ ${metaSource} -> ${metaTarget}, không tương thích với cặp ngôn ngữ bản dịch hiện tại (${dlSource} -> ${dlTarget}). Hệ thống đã tự động bỏ qua Glossary này để hoàn thành bản dịch thành công.`;
+        } else {
+          bodyData.glossary_id = glossaryId.trim();
+          glossaryApplied = true;
+        }
+      } else {
+        console.warn(`[DeepL] Could not verify glossary metadata for ID ${glossaryId}. Proceeding anyway.`);
+        bodyData.glossary_id = glossaryId.trim();
+        glossaryApplied = true;
+      }
     }
-    bodyData.glossary_id = glossaryId.trim();
   }
 
   // DeepL only supports formality for specific target languages
@@ -76,7 +155,11 @@ async function translateWithDeepL(
 
   const data = await response.json();
   if (data.translations && data.translations[0]) {
-    return data.translations[0].text;
+    return {
+      text: data.translations[0].text,
+      glossaryApplied,
+      glossaryWarning
+    };
   }
   throw new Error("Invalid response structure from DeepL API");
 }
@@ -260,7 +343,13 @@ function applyCustomStyleRules(html: string, styleRules: string): string {
 }
 
 // Cache for translation requests to avoid repeated DeepL translation API calls
-const translationCache = new Map<string, { translatedText: string; provider: string; cachedAt: number }>();
+const translationCache = new Map<string, { 
+  translatedText: string; 
+  provider: string; 
+  cachedAt: number;
+  glossaryApplied?: boolean;
+  glossaryWarning?: string;
+}>();
 const MAX_CACHE_SIZE = 1000;
 const TRANSLATION_CACHE_TTL = 30 * 60 * 1000; // 30 minutes cache TTL
 
@@ -370,11 +459,14 @@ app.post("/api/translate", async (req, res) => {
         translatedText: cached.translatedText,
         provider: cached.provider,
         cached: true,
+        glossaryApplied: cached.glossaryApplied,
+        glossaryWarning: cached.glossaryWarning,
       });
     }
 
     // Always translate with DeepL as requested
-    let translatedText = await translateWithDeepL(text, targetLang, sourceLang, glossaryId, formality);
+    const result = await translateWithDeepL(text, targetLang, sourceLang, glossaryId, formality);
+    let translatedText = result.text;
     const provider = "DeepL";
 
     // Apply custom style rules and highlights locally (without Gemini)
@@ -384,7 +476,8 @@ app.post("/api/translate", async (req, res) => {
     }
 
     // Highlight glossaries exactly based on fetched entries from DeepL API
-    if (glossaryId && glossaryId.trim() !== "") {
+    // Only if glossary was actually applied successfully
+    if (glossaryId && glossaryId.trim() !== "" && result.glossaryApplied) {
       console.log("[Server] Fetching DeepL glossary entries for exact tagging...");
       const glossaryEntries = await fetchDeepLGlossaryEntries(glossaryId);
       console.log("[Server] Found glossary entries:", Object.keys(glossaryEntries).length);
@@ -396,7 +489,13 @@ app.post("/api/translate", async (req, res) => {
       console.log("[Cache] Translation cache full, clearing entries to release memory.");
       translationCache.clear();
     }
-    translationCache.set(cacheKey, { translatedText, provider, cachedAt: now });
+    translationCache.set(cacheKey, { 
+      translatedText, 
+      provider, 
+      cachedAt: now,
+      glossaryApplied: result.glossaryApplied,
+      glossaryWarning: result.glossaryWarning
+    });
 
     const latency = Date.now() - startTime;
     addMetricEntry({
@@ -410,7 +509,12 @@ app.post("/api/translate", async (req, res) => {
       textSnippet,
     });
 
-    return res.json({ translatedText, provider });
+    return res.json({ 
+      translatedText, 
+      provider,
+      glossaryApplied: result.glossaryApplied,
+      glossaryWarning: result.glossaryWarning
+    });
   } catch (error: any) {
     console.error("Translation API Error:", error);
     const latency = Date.now() - startTime;

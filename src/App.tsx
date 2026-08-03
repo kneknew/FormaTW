@@ -43,6 +43,7 @@ export default function App() {
   
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [glossaryWarning, setGlossaryWarning] = useState<string | null>(null);
   const [provider, setProvider] = useState<ProviderType | null>(null);
   const [isAutoTranslate, setIsAutoTranslate] = useState(true);
 
@@ -122,11 +123,13 @@ export default function App() {
     if (!plain) {
       setTranslatedText("");
       setProvider(null);
+      setGlossaryWarning(null);
       return;
     }
 
     setIsLoading(true);
     setError(null);
+    setGlossaryWarning(null);
 
     try {
       const response = await fetch("/api/translate", {
@@ -150,6 +153,7 @@ export default function App() {
       const data = await response.json();
       setTranslatedText(data.translatedText);
       setProvider(data.provider);
+      setGlossaryWarning(data.glossaryWarning || null);
 
       // Save record to history
       saveToHistory(sourceText, data.translatedText, sourceLangCode, targetLangCode);
@@ -404,6 +408,22 @@ export default function App() {
               >
                 <ShieldAlert className="h-5 w-5 shrink-0 text-rose-500 mt-0.5" />
                 <div className="flex-1 text-xs font-semibold">{error}</div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* Glossary Warning alert */}
+          <AnimatePresence>
+            {glossaryWarning && (
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 10 }}
+                className="p-4 bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-900/40 rounded-xl text-amber-800 dark:text-amber-300 flex items-start space-x-3 shadow-md"
+                id="glossary-warning-alert"
+              >
+                <Info className="h-5 w-5 shrink-0 text-amber-500 mt-0.5" />
+                <div className="flex-1 text-xs font-semibold">{glossaryWarning}</div>
               </motion.div>
             )}
           </AnimatePresence>

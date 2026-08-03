@@ -1,5 +1,68 @@
 @import "tailwindcss";
 
+@variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --color-indigo-50: #f0f4fa;
+  --color-indigo-100: #dbe4f4;
+  --color-indigo-200: #bed0ea;
+  --color-indigo-300: #93b3dc;
+  --color-indigo-400: #6291cc;
+  --color-indigo-500: #3f73bc;
+  --color-indigo-600: #0f2c59;
+  --color-indigo-700: #0c244b;
+  --color-indigo-800: #0a1d3c;
+  --color-indigo-900: #07152c;
+  --color-indigo-950: #040c1b;
+}
+
+/* Custom Scrollbar styling for all elements */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* Light mode scrollbar thumb */
+::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.3); /* slate-400 with opacity */
+  border-radius: 9999px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(148, 163, 184, 0.5);
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+
+/* Dark mode scrollbar thumb */
+.dark ::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.2);
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: rgba(148, 163, 184, 0.4);
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+
+/* For Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(148, 163, 184, 0.3) transparent;
+}
+
+.dark * {
+  scrollbar-color: rgba(148, 163, 184, 0.2) transparent;
+}
+
 /* Highlights for applied style rules and glossaries */
 .applied-style-rule {
   color: #0d9488; /* Teal-600 */

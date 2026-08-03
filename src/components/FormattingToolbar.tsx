@@ -42,7 +42,7 @@ export default function FormattingToolbar({
   ];
 
   return (
-    <div className="flex items-center justify-between border-b border-[#F3F4F6] bg-[#F9FAFB] px-4 py-2.5 rounded-t-xl">
+    <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 px-4 py-2.5 rounded-t-xl">
       <div className="flex items-center space-x-1.5">
         {tools.map((tool) => {
           const IconComponent = tool.icon;
@@ -54,7 +54,7 @@ export default function FormattingToolbar({
                 e.preventDefault(); // Keep focus in editable div
                 onFormat(tool.command);
               }}
-              className="p-1.5 text-[#4B5563] hover:text-[#0F2D52] hover:bg-[#F3F4F6] rounded transition-all duration-150 cursor-pointer"
+              className="p-1.5 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-200 dark:hover:bg-slate-800 rounded transition-all duration-150 cursor-pointer"
               title={tool.label}
               id={`btn-format-${tool.id}`}
             >
@@ -63,7 +63,7 @@ export default function FormattingToolbar({
           );
         })}
 
-        <div className="h-4 w-px bg-slate-200 mx-1"></div>
+        <div className="h-4 w-px bg-slate-200 dark:bg-slate-800 mx-1"></div>
 
         <button
           type="button"
@@ -71,7 +71,7 @@ export default function FormattingToolbar({
             e.preventDefault();
             onClear();
           }}
-          className="p-1.5 text-slate-500 hover:text-red-600 hover:bg-[#F3F4F6] rounded transition-all duration-150 flex items-center space-x-1 cursor-pointer"
+          className="p-1.5 text-slate-500 dark:text-slate-400 hover:text-rose-500 dark:hover:text-rose-400 hover:bg-slate-200 dark:hover:bg-slate-800 rounded transition-all duration-150 flex items-center space-x-1 cursor-pointer"
           title="Xóa định dạng"
           id="btn-format-clear"
         >
@@ -88,7 +88,7 @@ export default function FormattingToolbar({
               e.preventDefault();
               onUndo();
             }}
-            className="p-1.5 text-[#4B5563] hover:text-[#0F2D52] hover:bg-[#F3F4F6] rounded transition-all duration-150 cursor-pointer"
+            className="p-1.5 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-200 dark:hover:bg-slate-800 rounded transition-all duration-150 cursor-pointer"
             title="Hoàn tác (Ctrl+Z)"
             id="btn-format-undo"
           >
@@ -102,7 +102,7 @@ export default function FormattingToolbar({
               e.preventDefault();
               onRedo();
             }}
-            className="p-1.5 text-[#4B5563] hover:text-[#0F2D52] hover:bg-[#F3F4F6] rounded transition-all duration-150 cursor-pointer"
+            className="p-1.5 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-200 dark:hover:bg-slate-800 rounded transition-all duration-150 cursor-pointer"
             title="Làm lại"
             id="btn-format-redo"
           >

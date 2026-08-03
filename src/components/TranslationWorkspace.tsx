@@ -534,21 +534,23 @@ export default function TranslationWorkspace({
                 type="button"
                 onClick={speakSource}
                 disabled={charCount === 0}
-                className="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors text-slate-400 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-100 disabled:opacity-40 disabled:pointer-events-none cursor-pointer"
+                className="px-2.5 py-1.5 bg-indigo-50/65 dark:bg-indigo-950/25 border border-indigo-200/70 dark:border-indigo-900/45 text-indigo-700 hover:text-indigo-800 dark:text-indigo-300 dark:hover:text-indigo-200 hover:bg-indigo-100/90 dark:hover:bg-indigo-950/55 rounded-lg transition-all flex items-center space-x-1.5 font-bold text-xs disabled:opacity-40 disabled:pointer-events-none cursor-pointer shadow-2xs"
                 title="Đọc văn bản gốc"
                 id="btn-speak-source"
               >
-                <Volume2 className="h-4 w-4" />
+                <Volume2 className="h-3.5 w-3.5" />
+                <span>Đọc bản gốc</span>
               </button>
               {charCount > 0 && (
                 <button
                   type="button"
                   onClick={handleClearAll}
-                  className="p-1.5 hover:bg-red-50 dark:hover:bg-red-950/50 text-slate-400 dark:text-slate-500 hover:text-red-600 dark:hover:text-red-400 rounded-lg transition-colors cursor-pointer"
+                  className="px-2.5 py-1.5 bg-red-50/65 dark:bg-red-950/25 border border-red-200/70 dark:border-red-900/45 text-red-700 hover:text-red-800 dark:text-red-300 dark:hover:text-red-200 hover:bg-red-100/90 dark:hover:bg-red-950/55 rounded-lg transition-all flex items-center space-x-1.5 font-bold text-xs cursor-pointer shadow-2xs"
                   title="Xóa toàn bộ nội dung"
                   id="btn-clear-source"
                 >
-                  <X className="h-4 w-4" />
+                  <X className="h-3.5 w-3.5" />
+                  <span>Xóa nội dung</span>
                 </button>
               )}
             </div>
@@ -615,26 +617,27 @@ export default function TranslationWorkspace({
                 type="button"
                 onClick={speakTarget}
                 disabled={!translatedText}
-                className="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors text-slate-400 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-100 disabled:opacity-40 disabled:pointer-events-none cursor-pointer"
+                className="px-2.5 py-1.5 bg-indigo-50/65 dark:bg-indigo-950/25 border border-indigo-200/70 dark:border-indigo-900/45 text-indigo-700 hover:text-indigo-800 dark:text-indigo-300 dark:hover:text-indigo-200 hover:bg-indigo-100/90 dark:hover:bg-indigo-950/55 rounded-lg transition-all flex items-center space-x-1.5 font-bold text-xs disabled:opacity-40 disabled:pointer-events-none cursor-pointer shadow-2xs"
                 title="Đọc văn bản dịch"
                 id="btn-speak-target"
               >
-                <Volume2 className="h-4 w-4" />
+                <Volume2 className="h-3.5 w-3.5" />
+                <span>Đọc bản dịch</span>
               </button>
               <button
                 type="button"
                 onClick={handleCopyTarget}
                 disabled={!translatedText}
-                className={`p-1.5 rounded-lg transition-all flex items-center space-x-1 border disabled:pointer-events-none ${
+                className={`px-3 py-1.5 rounded-lg transition-all flex items-center space-x-1.5 border font-bold text-xs disabled:pointer-events-none cursor-pointer shadow-2xs ${
                   copied
-                    ? "bg-emerald-50 dark:bg-emerald-950/40 border-emerald-100 dark:border-emerald-900/60 text-emerald-600 dark:text-emerald-400"
-                    : "hover:bg-slate-100 dark:hover:bg-slate-800 border-transparent text-slate-400 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-100 disabled:opacity-40 cursor-pointer"
+                    ? "bg-emerald-50 dark:bg-emerald-950/40 border-emerald-200 dark:border-emerald-800 text-emerald-600 dark:text-emerald-400"
+                    : "bg-indigo-50/65 dark:bg-indigo-950/25 border-indigo-200/70 dark:border-indigo-900/45 text-indigo-700 hover:text-indigo-800 dark:text-indigo-300 dark:hover:text-indigo-200 hover:bg-indigo-100/90 dark:hover:bg-indigo-950/55"
                 }`}
                 title="Sao chép bản dịch"
                 id="btn-copy-target"
               >
-                {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
-                {copied && <span className="text-xs font-bold">Đã sao chép!</span>}
+                {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
+                <span>{copied ? "Đã sao chép!" : "Sao chép bản dịch"}</span>
               </button>
             </div>
 

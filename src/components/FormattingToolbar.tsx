@@ -71,16 +71,16 @@ export default function FormattingToolbar({
             e.preventDefault();
             onClear();
           }}
-          className="p-1.5 text-slate-500 dark:text-slate-400 hover:text-rose-500 dark:hover:text-rose-400 hover:bg-slate-200 dark:hover:bg-slate-800 rounded transition-all duration-150 flex items-center space-x-1 cursor-pointer"
+          className="px-2.5 py-1 bg-amber-50/65 dark:bg-amber-950/25 border border-amber-200/70 dark:border-amber-900/45 text-amber-700 hover:text-amber-800 dark:text-amber-300 dark:hover:text-amber-200 hover:bg-amber-100/90 dark:hover:bg-amber-950/55 rounded-lg transition-all duration-150 flex items-center space-x-1 font-semibold text-xs cursor-pointer shadow-2xs"
           title="Xóa định dạng"
           id="btn-format-clear"
         >
-          <Trash2 className="h-4 w-4" />
-          <span className="text-xs font-semibold">Bỏ định dạng</span>
+          <Trash2 className="h-3.5 w-3.5" />
+          <span>Bỏ định dạng</span>
         </button>
       </div>
 
-      <div className="flex items-center space-x-1">
+      <div className="flex items-center space-x-2">
         {onUndo && (
           <button
             type="button"
@@ -88,11 +88,12 @@ export default function FormattingToolbar({
               e.preventDefault();
               onUndo();
             }}
-            className="p-1.5 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-200 dark:hover:bg-slate-800 rounded transition-all duration-150 cursor-pointer"
+            className="px-2.5 py-1 bg-indigo-50/65 dark:bg-indigo-950/25 border border-indigo-200/70 dark:border-indigo-900/45 text-indigo-700 hover:text-indigo-800 dark:text-indigo-300 dark:hover:text-indigo-200 hover:bg-indigo-100/90 dark:hover:bg-indigo-950/55 rounded-lg transition-all duration-150 flex items-center space-x-1 font-semibold text-xs cursor-pointer shadow-2xs"
             title="Hoàn tác (Ctrl+Z)"
             id="btn-format-undo"
           >
-            <Undo className="h-4 w-4" />
+            <Undo className="h-3.5 w-3.5" />
+            <span>Hoàn tác</span>
           </button>
         )}
         {onRedo && (
@@ -102,11 +103,12 @@ export default function FormattingToolbar({
               e.preventDefault();
               onRedo();
             }}
-            className="p-1.5 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-200 dark:hover:bg-slate-800 rounded transition-all duration-150 cursor-pointer"
+            className="px-2.5 py-1 bg-indigo-50/65 dark:bg-indigo-950/25 border border-indigo-200/70 dark:border-indigo-900/45 text-indigo-700 hover:text-indigo-800 dark:text-indigo-300 dark:hover:text-indigo-200 hover:bg-indigo-100/90 dark:hover:bg-indigo-950/55 rounded-lg transition-all duration-150 flex items-center space-x-1 font-semibold text-xs cursor-pointer shadow-2xs"
             title="Làm lại"
             id="btn-format-redo"
           >
-            <Redo className="h-4 w-4" />
+            <Redo className="h-3.5 w-3.5" />
+            <span>Làm lại</span>
           </button>
         )}
       </div>

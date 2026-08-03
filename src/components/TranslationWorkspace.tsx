@@ -99,10 +99,38 @@ export default function TranslationWorkspace({
     visible: boolean;
   } | null>(null);
 
-  // Calculate plain text character count
+  // Calculate plain text character count while preserving line breaks from block-level elements and br tags
   const getPlainText = (html: string) => {
-    const doc = new DOMParser().parseFromString(html, "text/html");
-    return doc.body.textContent || doc.body.innerText || "";
+    if (!html) return "";
+    try {
+      const tempDiv = document.createElement("div");
+      tempDiv.innerHTML = html;
+      
+      // innerText matches the browser's visual layout rules, including correct newlines and list formatting
+      const text = tempDiv.innerText || tempDiv.textContent || "";
+      return text.trim();
+    } catch (e) {
+      // Fallback regex approach if document context is not available
+      let text = html.replace(/<br\s*\/?>/gi, "\n");
+      text = text.replace(/<\/div>/gi, "\n")
+                 .replace(/<\/p>/gi, "\n\n")
+                 .replace(/<\/h[1-6]>/gi, "\n\n")
+                 .replace(/<\/li>/gi, "\n")
+                 .replace(/<\/tr>/gi, "\n");
+      text = text.replace(/<[^>]+>/g, "");
+      
+      const entities: Record<string, string> = {
+        "&amp;": "&",
+        "&lt;": "<",
+        "&gt;": ">",
+        "&quot;": '"',
+        "&#039;": "'",
+        "&nbsp;": " "
+      };
+      text = text.replace(/&amp;|&lt;|&gt;|&quot;|&#039;|&nbsp;/g, (match) => entities[match] || match);
+      text = text.replace(/\n{3,}/g, "\n\n");
+      return text.trim();
+    }
   };
 
   const plainSourceText = getPlainText(sourceText);
@@ -182,11 +210,33 @@ export default function TranslationWorkspace({
   const handleCopyTarget = async () => {
     try {
       const plainTranslated = getPlainText(translatedText);
-      await navigator.clipboard.writeText(plainTranslated);
+      
+      if (navigator.clipboard && window.ClipboardItem) {
+        // Prepare HTML and Plain Text blobs so Word/Google Docs paste formatted content correctly
+        const htmlBlob = new Blob([translatedText], { type: "text/html" });
+        const textBlob = new Blob([plainTranslated], { type: "text/plain" });
+        const clipboardItem = new ClipboardItem({
+          "text/html": htmlBlob,
+          "text/plain": textBlob,
+        });
+        await navigator.clipboard.write([clipboardItem]);
+      } else {
+        // Fallback for older browsers or restricted iframe sandboxes
+        await navigator.clipboard.writeText(plainTranslated);
+      }
+      
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch (err) {
-      console.error("Copy failed:", err);
+      console.error("Advanced clipboard copy failed, using plain-text fallback:", err);
+      try {
+        const plainTranslated = getPlainText(translatedText);
+        await navigator.clipboard.writeText(plainTranslated);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+      } catch (fallbackErr) {
+        console.error("Fallback plain text copy failed:", fallbackErr);
+      }
     }
   };
 

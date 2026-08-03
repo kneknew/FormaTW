@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100">
+  <defs>
+    <linearGradient id="blueGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#3b82f6" />
+      <stop offset="100%" stop-color="#1d4ed8" />
+    </linearGradient>
+    <linearGradient id="greenGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#10b981" />
+      <stop offset="100%" stop-color="#047857" />
+    </linearGradient>
+  </defs>
+  <!-- Background rounded card -->
+  <rect width="100" height="100" rx="22" fill="#0f172a" />
+  
+  <!-- Left bubble (Blue) -->
+  <path d="M 32 38 A 18 18 0 0 1 68 38 A 18 18 0 0 1 58 54 L 62 65 L 50 57 A 18 18 0 0 1 32 38 Z" fill="url(#blueGrad)" opacity="0.95"/>
+  
+  <!-- Right bubble (Green) -->
+  <path d="M 68 62 A 18 18 0 0 1 32 62 A 18 18 0 0 1 42 46 L 38 35 L 50 43 A 18 18 0 0 1 68 62 Z" fill="url(#greenGrad)" opacity="0.85" style="mix-blend-mode: screen;"/>
+  
+  <!-- Custom letter markings for localization/translation theme -->
+  <text x="44" y="44" font-family="system-ui, -apple-system, sans-serif" font-weight="800" font-size="12" fill="#ffffff" text-anchor="middle" opacity="0.95">A</text>
+  <text x="56" y="58" font-family="system-ui, -apple-system, sans-serif" font-weight="800" font-size="11" fill="#ffffff" text-anchor="middle" opacity="0.95">译</text>
+</svg>

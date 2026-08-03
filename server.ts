@@ -264,11 +264,73 @@ const translationCache = new Map<string, { translatedText: string; provider: str
 const MAX_CACHE_SIZE = 1000;
 const TRANSLATION_CACHE_TTL = 30 * 60 * 1000; // 30 minutes cache TTL
 
+// API Traffic metrics tracking model
+interface ApiMetricEntry {
+  id: string;
+  timestamp: number;
+  sourceLang: string;
+  targetLang: string;
+  charCount: number;
+  latencyMs: number;
+  status: "success" | "error";
+  errorMsg?: string;
+  cacheHit: boolean;
+  textSnippet: string;
+}
+
+const apiMetrics = {
+  totalRequests: 0,
+  totalChars: 0,
+  successfulRequests: 0,
+  failedRequests: 0,
+  cacheHits: 0,
+  cacheHitChars: 0,
+  totalLatencyMs: 0,
+  recentRequests: [] as ApiMetricEntry[],
+};
+
+function addMetricEntry(entry: Omit<ApiMetricEntry, "id">) {
+  const newEntry: ApiMetricEntry = {
+    id: Math.random().toString(36).substring(2, 11),
+    ...entry,
+  };
+  apiMetrics.recentRequests = [newEntry, ...apiMetrics.recentRequests].slice(0, 100); // Keep last 100 requests
+  
+  apiMetrics.totalRequests++;
+  if (entry.status === "success") {
+    apiMetrics.successfulRequests++;
+    if (entry.cacheHit) {
+      apiMetrics.cacheHits++;
+      apiMetrics.cacheHitChars += entry.charCount;
+    } else {
+      apiMetrics.totalChars += entry.charCount;
+      apiMetrics.totalLatencyMs += entry.latencyMs;
+    }
+  } else {
+    apiMetrics.failedRequests++;
+    apiMetrics.totalLatencyMs += entry.latencyMs;
+  }
+}
+
+function resetMetrics() {
+  apiMetrics.totalRequests = 0;
+  apiMetrics.totalChars = 0;
+  apiMetrics.successfulRequests = 0;
+  apiMetrics.failedRequests = 0;
+  apiMetrics.cacheHits = 0;
+  apiMetrics.cacheHitChars = 0;
+  apiMetrics.totalLatencyMs = 0;
+  apiMetrics.recentRequests = [];
+}
+
 // Translation Endpoint
 app.post("/api/translate", async (req, res) => {
-  try {
-    const { text, sourceLang, targetLang, glossaryId, formality, styleRules } = req.body;
+  const startTime = Date.now();
+  const { text, sourceLang, targetLang, glossaryId, formality, styleRules } = req.body;
+  const chars = text ? text.length : 0;
+  const textSnippet = text ? (text.length > 50 ? text.substring(0, 50) + "..." : text) : "";
 
+  try {
     if (!text || text.trim() === "") {
       return res.status(400).json({ error: "Nội dung dịch không được bỏ trống." });
     }
@@ -292,6 +354,18 @@ app.post("/api/translate", async (req, res) => {
     const cached = translationCache.get(cacheKey);
     if (cached && now - cached.cachedAt < TRANSLATION_CACHE_TTL) {
       console.log("[Cache] Serving translation from memory cache (Instant 0ms)");
+      
+      addMetricEntry({
+        timestamp: now,
+        sourceLang: sourceLang || "auto",
+        targetLang,
+        charCount: chars,
+        latencyMs: 0,
+        status: "success",
+        cacheHit: true,
+        textSnippet,
+      });
+
       return res.json({
         translatedText: cached.translatedText,
         provider: cached.provider,
@@ -324,11 +398,90 @@ app.post("/api/translate", async (req, res) => {
     }
     translationCache.set(cacheKey, { translatedText, provider, cachedAt: now });
 
+    const latency = Date.now() - startTime;
+    addMetricEntry({
+      timestamp: now,
+      sourceLang: sourceLang || "auto",
+      targetLang,
+      charCount: chars,
+      latencyMs: latency,
+      status: "success",
+      cacheHit: false,
+      textSnippet,
+    });
+
     return res.json({ translatedText, provider });
   } catch (error: any) {
     console.error("Translation API Error:", error);
+    const latency = Date.now() - startTime;
+    addMetricEntry({
+      timestamp: Date.now(),
+      sourceLang: sourceLang || "auto",
+      targetLang,
+      charCount: chars,
+      latencyMs: latency,
+      status: "error",
+      errorMsg: error.message || "Lỗi xử lý dịch thuật.",
+      cacheHit: false,
+      textSnippet,
+    });
+
     return res.status(500).json({ error: error.message || "Lỗi xử lý dịch thuật." });
   }
+});
+
+// Fetch real usage limits from DeepL API
+async function fetchDeepLUsage(): Promise<{ character_count: number; character_limit: number } | null> {
+  const apiKey = process.env.DEEPL_API_KEY;
+  if (!apiKey) return null;
+
+  const isFreeAccount = apiKey.endsWith(":fx");
+  const url = isFreeAccount
+    ? "https://api-free.deepl.com/v2/usage"
+    : "https://api.deepl.com/v2/usage";
+
+  try {
+    const response = await fetch(url, {
+      method: "GET",
+      headers: {
+        Authorization: `DeepL-Auth-Key ${apiKey}`,
+      },
+    });
+
+    if (!response.ok) {
+      console.warn(`[DeepL] Usage API returned status ${response.status}`);
+      return null;
+    }
+
+    const data = await response.json();
+    if (typeof data.character_count === "number" && typeof data.character_limit === "number") {
+      return {
+        character_count: data.character_count,
+        character_limit: data.character_limit,
+      };
+    }
+  } catch (err) {
+    console.error("Error fetching DeepL Usage:", err);
+  }
+  return null;
+}
+
+// Traffic Metrics Endpoints
+app.get("/api/metrics", async (req, res) => {
+  const usage = await fetchDeepLUsage();
+  if (usage) {
+    res.json({
+      ...apiMetrics,
+      deeplUsage: usage,
+    });
+  } else {
+    res.json(apiMetrics);
+  }
+});
+
+app.post("/api/metrics/reset", (req, res) => {
+  resetMetrics();
+  res.json({ success: true, metrics: apiMetrics });
 });
 
 // Configuration Info Endpoint

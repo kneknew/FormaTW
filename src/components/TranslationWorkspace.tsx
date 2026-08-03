@@ -220,7 +220,7 @@ export default function TranslationWorkspace({
       {/* Top Options Bar */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 bg-white px-5 py-3 rounded-xl border border-slate-200/80 shadow-sm">
         <div className="flex items-center space-x-2">
-          <span className="text-xs font-bold uppercase tracking-wider text-[#0F2D52] bg-[#0F2D52]/5 px-2.5 py-1 rounded-md">DeepL Translator</span>
+          <span className="text-xs font-bold uppercase tracking-wider text-[#312E81] bg-[#312E81]/5 px-2.5 py-1 rounded-md">DeepL Translator</span>
         </div>
 
         {/* Auto Translate Toggle and Advanced Settings button */}
@@ -231,7 +231,7 @@ export default function TranslationWorkspace({
             onClick={() => setIsAdvancedOpen(!isAdvancedOpen)}
             className={`flex items-center space-x-1 px-3 py-1.5 rounded-lg text-xs font-bold border transition-all cursor-pointer ${
               isAdvancedOpen
-                ? "bg-[#0F2D52]/10 text-[#0F2D52] border-[#0F2D52]/20 shadow-sm"
+                ? "bg-[#312E81]/10 text-[#312E81] border-[#312E81]/20 shadow-sm"
                 : "bg-transparent text-slate-600 border-slate-200 hover:bg-slate-50"
             }`}
             title="Cấu hình nâng cao DeepL (Glossary, Style Rules)"
@@ -247,7 +247,7 @@ export default function TranslationWorkspace({
               type="button"
               onClick={onToggleAutoTranslate}
               className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
-                isAutoTranslate ? "bg-[#0F2D52]" : "bg-slate-200"
+                isAutoTranslate ? "bg-[#312E81]" : "bg-slate-200"
               }`}
               id="toggle-auto-translate"
             >
@@ -265,7 +265,7 @@ export default function TranslationWorkspace({
       {isAdvancedOpen && (
         <div className="bg-white px-5 py-4 rounded-xl border border-slate-200/80 shadow-sm flex flex-col space-y-4" id="advanced-deepl-panel">
           <div className="flex items-center space-x-2 pb-2 border-b border-slate-100">
-            <Sliders className="h-4 w-4 text-[#0F2D52]" />
+            <Sliders className="h-4 w-4 text-[#312E81]" />
             <h3 className="text-xs font-bold uppercase tracking-wider text-slate-700">Cấu hình nâng cao DeepL API (Văn phong & Thuật ngữ)</h3>
           </div>
 
@@ -282,7 +282,7 @@ export default function TranslationWorkspace({
                 value={glossaryId}
                 onChange={(e) => onChangeGlossaryId(e.target.value)}
                 placeholder="Ví dụ: 123e4567-e89b-12d3-a456-426614174000"
-                className="px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-medium focus:outline-none focus:ring-1 focus:ring-[#0F2D52]/30 focus:border-[#0F2D52] transition-all"
+                className="px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-medium focus:outline-none focus:ring-1 focus:ring-[#312E81]/30 focus:border-[#312E81] transition-all"
               />
               <p className="text-[10px] text-slate-400 leading-normal">
                 Để áp dụng Glossary, bạn <strong>phải chọn ngôn ngữ nguồn cụ thể</strong> (không chọn Tự động phát hiện) khớp với ngôn ngữ của Glossary đã đăng ký trên API của bạn.
@@ -299,7 +299,7 @@ export default function TranslationWorkspace({
                 id="select-formality"
                 value={formality}
                 onChange={(e) => onChangeFormality(e.target.value)}
-                className="px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-medium focus:outline-none focus:ring-1 focus:ring-[#0F2D52]/30 focus:border-[#0F2D52] transition-all"
+                className="px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-medium focus:outline-none focus:ring-1 focus:ring-[#312E81]/30 focus:border-[#312E81] transition-all"
               >
                 <option value="default">Tự động / Mặc định (Default)</option>
                 <option value="more">Trang trọng, lịch sự (Formal / More)</option>
@@ -325,7 +325,7 @@ export default function TranslationWorkspace({
               value={styleRules}
               onChange={(e) => onChangeStyleRules(e.target.value)}
               placeholder="Ví dụ:&#13;- dự án -> chiến dịch&#13;- hello -> xin kính chào quý khách&#13;- cá nhân hóa -> tối ưu hóa trải nghiệm"
-              className="px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-medium focus:outline-none focus:ring-1 focus:ring-[#0F2D52]/30 focus:border-[#0F2D52] transition-all leading-relaxed"
+              className="px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-medium focus:outline-none focus:ring-1 focus:ring-[#312E81]/30 focus:border-[#312E81] transition-all leading-relaxed"
             />
             <p className="text-[10px] text-slate-400 leading-normal">
               Viết quy tắc thay thế từ hoặc cụm từ tùy chỉnh trên từng dòng bằng cú pháp <code>{"Từ gốc -> Từ mới"}</code>. Hệ thống sẽ tự động tinh chỉnh bản dịch DeepL và làm nổi bật các từ được thay đổi để bạn dễ dàng theo dõi.
@@ -346,7 +346,7 @@ export default function TranslationWorkspace({
       {/* Main Translator Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {/* LEFT COLUMN: SOURCE */}
-        <div className="bg-white border border-slate-200 rounded-xl shadow-sm flex flex-col focus-within:ring-1 focus-within:ring-[#0F2D52]/30 focus-within:border-[#0F2D52] transition-all overflow-hidden" id="source-panel">
+        <div className="bg-white border border-slate-200 rounded-xl shadow-sm flex flex-col focus-within:ring-1 focus-within:ring-[#312E81]/30 focus-within:border-[#312E81] transition-all overflow-hidden" id="source-panel">
           {/* Header language selector */}
           <div className="px-3 py-2 bg-slate-50 border-b border-slate-100 flex items-center justify-between">
             <LanguageSelector
@@ -459,7 +459,7 @@ export default function TranslationWorkspace({
           <div className="flex-1 min-h-[220px] lg:min-h-[260px] p-4 bg-[#F9FAFB] relative">
             {isLoading ? (
               <div className="absolute inset-0 bg-white/70 backdrop-blur-[1px] flex flex-col items-center justify-center z-10">
-                <Loader2 className="h-8 w-8 text-[#0F2D52] animate-spin" />
+                <Loader2 className="h-8 w-8 text-[#312E81] animate-spin" />
                 <span className="text-xs font-bold text-slate-500 mt-2">Đang biên dịch...</span>
               </div>
             ) : null}
@@ -516,7 +516,7 @@ export default function TranslationWorkspace({
                 type="button"
                 onClick={onTranslate}
                 disabled={charCount === 0 || isLoading}
-                className="px-5 py-1.5 bg-[#0F2D52] hover:bg-[#163b66] text-white font-bold rounded-lg text-sm shadow-md shadow-slate-100 hover:shadow-slate-200 hover:-translate-y-0.5 active:translate-y-0 active:shadow-md transition-all cursor-pointer disabled:opacity-40 disabled:pointer-events-none disabled:transform-none"
+                className="px-5 py-1.5 bg-[#312E81] hover:bg-[#4338CA] text-white font-bold rounded-lg text-sm shadow-md shadow-indigo-100 hover:shadow-indigo-200 hover:-translate-y-0.5 active:translate-y-0 active:shadow-md transition-all cursor-pointer disabled:opacity-40 disabled:pointer-events-none disabled:transform-none"
                 id="manual-translate-btn"
               >
                 Dịch ngay

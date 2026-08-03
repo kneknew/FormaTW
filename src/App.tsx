@@ -10,11 +10,13 @@ import {
   Star,
   Sparkles,
   ExternalLink,
+  Activity,
 } from "lucide-react";
 import { SUPPORTED_LANGUAGES, getLanguageName } from "./data";
 import { TranslationHistoryItem, ProviderType, ForcedProviderType } from "./types";
 import TranslationWorkspace from "./components/TranslationWorkspace";
 import HistorySidebar from "./components/HistorySidebar";
+import TrafficAnalytics from "./components/TrafficAnalytics";
 
 export default function App() {
   const [sourceText, setSourceText] = useState("");
@@ -34,6 +36,10 @@ export default function App() {
   
   const [history, setHistory] = useState<TranslationHistoryItem[]>([]);
   const [showHistory, setShowHistory] = useState(true);
+  const [showAnalytics, setShowAnalytics] = useState(() => {
+    const val = localStorage.getItem("deepl_show_analytics");
+    return val !== null ? val === "true" : true; // Default to true to show it instantly
+  });
   const [serverConfig, setServerConfig] = useState<{ hasDeepLKey: boolean; hasGeminiKey: boolean }>({
     hasDeepLKey: false,
     hasGeminiKey: false,
@@ -51,6 +57,10 @@ export default function App() {
   useEffect(() => {
     localStorage.setItem("deepl_style_rules", styleRules);
   }, [styleRules]);
+
+  useEffect(() => {
+    localStorage.setItem("deepl_show_analytics", String(showAnalytics));
+  }, [showAnalytics]);
 
   // Load history from localStorage on mount
   useEffect(() => {
@@ -204,16 +214,21 @@ export default function App() {
   return (
     <div className="min-h-screen bg-[#F0F2F5] flex flex-col font-sans text-slate-900">
       {/* HEADER BAR */}
-      <header className="bg-[#0F2D52] text-white border-b border-[#1A3E68] shrink-0 shadow-sm" id="main-header">
+      <header className="bg-[#312E81] text-white border-b border-[#4338CA] shrink-0 shadow-sm" id="main-header">
         <div className="max-w-7xl mx-auto px-6 h-[60px] flex items-center justify-between">
           <div className="flex items-center space-x-8">
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center space-x-3">
               <div className="bg-indigo-500 p-1.5 rounded-lg text-white flex items-center justify-center">
                 <Languages className="h-5 w-5" />
               </div>
-              <h1 className="text-xl font-bold tracking-tight select-none">
-                DeepL <span className="font-light text-slate-300">Dịch Thuật</span>
-              </h1>
+              <div className="flex items-center space-x-2">
+                <h1 className="text-xl font-bold tracking-tight select-none">
+                  FormaTW <span className="font-light text-slate-300">Dịch Thuật</span>
+                </h1>
+                <span className="text-[10px] font-bold tracking-wide uppercase px-1.5 py-0.5 bg-indigo-500/35 border border-indigo-400/30 rounded text-indigo-100 shadow-xs">
+                  DeepL API
+                </span>
+              </div>
             </div>
 
             {/* Decorative minimalist nav links mimicking genuine DeepL layout */}
@@ -227,11 +242,24 @@ export default function App() {
 
           <div className="flex items-center space-x-4">
             <button
+              onClick={() => setShowAnalytics(!showAnalytics)}
+              className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs font-bold border transition-all cursor-pointer ${
+                showAnalytics
+                  ? "bg-white/10 text-white border-white/20"
+                  : "bg-transparent text-slate-300 border-slate-600 hover:bg-[#4338CA]"
+              }`}
+              id="analytics-toggle-btn"
+            >
+              <Activity className="h-4 w-4" />
+              <span>{showAnalytics ? "Ẩn phân tích" : "Phân tích API"}</span>
+            </button>
+
+            <button
               onClick={() => setShowHistory(!showHistory)}
               className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs font-bold border transition-all cursor-pointer ${
                 showHistory
                   ? "bg-white/10 text-white border-white/20"
-                  : "bg-transparent text-slate-300 border-slate-600 hover:bg-[#1A3E68]"
+                  : "bg-transparent text-slate-300 border-slate-600 hover:bg-[#4338CA]"
               }`}
               id="sidebar-toggle-btn"
             >
@@ -249,16 +277,10 @@ export default function App() {
 
       {/* WORKSPACE & BODY CONTAINER */}
       <main className="flex-1 w-full max-w-7xl mx-auto p-4 md:p-6 flex flex-col lg:flex-row gap-6">
-        {/* LEFT COMPONENT: COLLAPSIBLE SIDEBAR */}
-        {showHistory && (
-          <div className="w-full lg:w-80 lg:shrink-0 flex flex-col h-[500px] lg:h-auto min-h-[400px]">
-            <HistorySidebar
-              history={history}
-              onSelectItem={handleSelectItem}
-              onDeleteItem={handleDeleteItem}
-              onClearAll={handleClearAllHistory}
-              onToggleStar={handleToggleStar}
-            />
+        {/* LEFT COMPONENT: COLLAPSIBLE SIDEBAR FOR ANALYTICS */}
+        {showAnalytics && (
+          <div className="w-full lg:w-[380px] lg:shrink-0 flex flex-col min-h-[400px]">
+            <TrafficAnalytics />
           </div>
         )}
 
@@ -294,9 +316,22 @@ export default function App() {
             </div>
           )}
 
+          {/* Translation History Dashboard at the bottom */}
+          {showHistory && (
+            <div className="w-full h-[450px] flex flex-col shrink-0">
+              <HistorySidebar
+                history={history}
+                onSelectItem={handleSelectItem}
+                onDeleteItem={handleDeleteItem}
+                onClearAll={handleClearAllHistory}
+                onToggleStar={handleToggleStar}
+              />
+            </div>
+          )}
+
           {/* TECHNICAL CONFIG / INFO FOOTER */}
           <div className="bg-white rounded-xl border border-slate-200/80 p-5 shadow-sm flex flex-col space-y-3.5" id="config-panel">
-            <div className="flex items-center space-x-2 text-[#0F2D52] font-bold text-sm">
+            <div className="flex items-center space-x-2 text-[#312E81] font-bold text-sm">
               <Info className="h-4.5 w-4.5" />
               <span>Cấu hình & Trạng thái kết nối</span>
             </div>

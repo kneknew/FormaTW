@@ -15,6 +15,7 @@ import {
   Moon,
 } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
+import { Analytics } from "@vercel/analytics/react";
 import { SUPPORTED_LANGUAGES, getLanguageName } from "./data";
 import { TranslationHistoryItem, ProviderType, ForcedProviderType } from "./types";
 import TranslationWorkspace from "./components/TranslationWorkspace";
@@ -496,6 +497,7 @@ export default function App() {
           </div>
         </div>
       </main>
+      <Analytics />
     </div>
   );
 }
